@@ -1,0 +1,62 @@
+name: Organize flat uploaded site files
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '*.html'
+      - '*.css'
+      - '*.js'
+      - '*.json'
+      - '.github/workflows/organize-flat-upload.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  organize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create folders and move files
+        shell: bash
+        run: |
+          mkdir -p assets/css assets/js reviews categories comparisons tools
+
+          # assets
+          [ -f style.css ] && git mv -f style.css assets/css/style.css || true
+          [ -f app.js ] && git mv -f app.js assets/js/app.js || true
+          [ -f data.json ] && git mv -f data.json assets/data.json || true
+
+          # tools page: current flat index.html is the tools page in this upload
+          if [ -f index.html ] && [ ! -f tools/index.html ]; then
+            cp index.html tools/index.html
+            git add tools/index.html
+          fi
+
+          # category pages
+          for f in cfd-prop-firms.html futures-prop-firms.html crypto-prop-firms.html brokers.html crypto-exchanges.html; do
+            [ -f "$f" ] && git mv -f "$f" "categories/$f" || true
+          done
+
+          # comparison pages
+          for f in ftmo-vs-fundednext.html the5ers-vs-ftmo.html fundingpips-vs-fundednext.html; do
+            [ -f "$f" ] && git mv -f "$f" "comparisons/$f" || true
+          done
+
+          # review pages
+          for f in alpha-capital-group.html aquafunded.html audacity-capital.html blue-guardian.html city-traders-imperium.html e8-markets.html fintokei.html ftmo.html funded-trading-plus.html fundednext.html funderpro.html fundingpips.html fundingtraders.html fxify.html goat-funded-trader.html hantec-trader.html hola-prime.html instant-funding.html lux-trading-firm.html ofp-funding.html pipfarm.html rebelsfunding.html sabiotrade.html the-trading-pit.html the5ers.html toptier-trader.html vproptrader.html; do
+            [ -f "$f" ] && git mv -f "$f" "reviews/$f" || true
+          done
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Organize site files into folders" || echo "No changes to commit"
+          git push
