@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /assets/js/
-Disallow: /assets/css/
-Disallow: /assets/data.json
 
-Sitemap: https://prophub.com/sitemap.xml
+Sitemap: https://l7adj.github.io/sitemap.xml
